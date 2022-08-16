@@ -4,36 +4,36 @@ from django.http import JsonResponse
 from .serializers import MovieSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 
 # Create your views here.
 
-# Function View
+# Class Based View
 
-@api_view(['GET', 'POST'])
-def movie_list(request):
-    if request.method== 'GET':
+class MovieListAPIView(APIView):
+    def get(self, request):
         movies = Movie.objects.all()
         serializer = MovieSerializer(movies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    if request.method== 'POST':
+        
+    def post(self, request):
         serializer = MovieSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
-    
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def movie_details(request, movie_id):
-    movie = Movie.objects.get(pk=movie_id)
-    if request.method== 'GET':
+
+
+class MovieDetailsAPIVIew(APIView):
+    def get(self, request, movie_id):
+        movie = Movie.objects.get(pk=movie_id)
         serializer = MovieSerializer(movie)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method== 'PUT':
+    def put(self, request, movie_id):
+        movie = Movie.objects.get(pk=movie_id)
         serializer = MovieSerializer(movie, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -41,6 +41,7 @@ def movie_details(request, movie_id):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method== 'DELETE':
+    def delete(self, request, movie_id):
+        movie = Movie.objects.get(pk=movie_id)
         movie.delete()
         return Response('Item deleted!', status=status.HTTP_204_NO_CONTENT)
